@@ -1,0 +1,2178 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="description" content="ActionMesh: Animated 3D Mesh Generation with Temporal 3D Diffusion">
+  <meta name="keywords" content="ActionMesh">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ActionMesh: Animated 3D Mesh Generation with Temporal 3D Diffusion</title>
+
+  <!-- Preconnect to external resources for faster loading -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+
+  <!-- Critical CSS - Inlined for immediate render -->
+  <style>
+    /* Critical above-the-fold styles */
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Noto Sans', sans-serif;
+      margin: 0;
+      background: #fafafa
+    }
+
+    .hero {
+      background-color: #fff
+    }
+
+    .section {
+      padding: 1.5rem
+    }
+
+    .container {
+      margin: 0 auto;
+      max-width: 960px;
+      padding: 0 1.5rem
+    }
+
+    .title {
+      font-weight: 600;
+      line-height: 1.125
+    }
+
+    .title.is-1 {
+      font-size: 3rem
+    }
+
+    .title.is-3 {
+      font-size: 2rem
+    }
+
+    .subtitle {
+      margin-top: -.5rem
+    }
+
+    .publication-title {
+      font-family: 'Google Sans', sans-serif
+    }
+
+    .publication-authors {
+      font-family: 'Google Sans', sans-serif
+    }
+
+    .publication-authors a {
+      color: #3273dc !important
+    }
+
+    .author-block {
+      display: inline-block
+    }
+
+    .publication-venue {
+      color: #555;
+      font-weight: 700
+    }
+
+    .teaser {
+      font-family: 'Google Sans', sans-serif
+    }
+
+    .teaser .hero-body {
+      padding-top: 0;
+      padding-bottom: 3rem
+    }
+
+    /* 4D Viewer Styles */
+    .viewer-4d-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.5rem;
+      width: 100%;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0;
+    }
+
+    .viewer-4d-item {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .viewer-4d-label {
+      display: block;
+      width: 100%;
+      text-align: center;
+      text-decoration: none;
+      padding: 12px 14px;
+      font-size: 14px;
+      font-weight: 700;
+      color: white;
+      border-radius: 10px 10px 0 0;
+      font-family: 'Google Sans', sans-serif;
+      transition: filter 0.2s;
+      box-sizing: border-box;
+    }
+
+    .viewer-4d-label:hover {
+      filter: brightness(1.15);
+    }
+
+    .viewer-4d-label.label-1 {
+      background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+    }
+
+    .viewer-4d-label.label-2 {
+      background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    }
+
+    .viewer-4d-label.label-3 {
+      background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);
+    }
+
+    .viewer-4d-label.label-4 {
+      background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+    }
+
+    .viewer-4d-wrapper {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      border-radius: 0 0 10px 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    }
+
+    .viewer-4d-wrapper model-viewer {
+      width: 100%;
+      height: 100%;
+      --poster-color: transparent;
+    }
+
+    .viewer-4d-controls {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 0.5rem;
+    }
+
+    .viewer-4d-controls button {
+      padding: 6px 14px;
+      font-size: 12px;
+      cursor: pointer;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      transition: transform 0.2s, box-shadow 0.2s, filter 0.2s;
+      font-family: 'Google Sans', sans-serif;
+    }
+
+    .viewer-4d-controls button:hover {
+      transform: translateY(-2px);
+      filter: brightness(1.15);
+    }
+
+    .viewer-4d-controls button.btn-1 {
+      background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+    }
+
+    .viewer-4d-controls button.btn-2 {
+      background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+      box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+    }
+
+    .viewer-4d-controls button.btn-3 {
+      background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);
+      box-shadow: 0 4px 12px rgba(236, 72, 153, 0.4);
+    }
+
+    .viewer-4d-controls button.btn-4 {
+      background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+      box-shadow: 0 4px 12px rgba(249, 115, 22, 0.4);
+    }
+
+    @media (max-width: 768px) {
+      .viewer-4d-grid {
+        grid-template-columns: repeat(2, 1fr);
+        max-width: 500px;
+      }
+      .viewer-4d-label {
+        font-size: 10px;
+        padding: 8px 10px;
+      }
+    }
+
+    /* Application Platforms Styles */
+    .application-platforms {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      margin: 1rem 0 2rem 0;
+    }
+
+    .app-platform {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 180px;
+      transition: transform 0.3s ease;
+    }
+
+    .app-platform:hover {
+      transform: translateY(-8px);
+    }
+
+    .app-platform a {
+      text-decoration: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .platform-video-container {
+      width: 160px;
+      height: 160px;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      margin-bottom: -8px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .platform-video-container video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      pointer-events: none;
+    }
+
+    .platform-base {
+      width: 180px;
+      height: 55px;
+      position: relative;
+      z-index: 0;
+    }
+
+    /* Application Section Title Styles */
+    .app-section-title {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      font-family: 'Google Sans', sans-serif;
+      font-size: 1.8rem;
+      font-weight: 600;
+      color: white;
+      padding: 12px 28px 12px 16px;
+      border-radius: 16px;
+      margin-bottom: 1rem;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .app-emoji-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.25);
+      backdrop-filter: blur(4px);
+      border-radius: 12px;
+      padding: 8px 12px;
+      font-size: 1.4rem;
+      box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.3), 0 2px 4px rgba(0, 0, 0, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .app-section-title.app-1 {
+      background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+      box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
+    }
+
+    .app-section-title.app-2 {
+      background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+      box-shadow: 0 4px 20px rgba(139, 92, 246, 0.4);
+    }
+
+    .app-section-title.app-3 {
+      background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);
+      box-shadow: 0 4px 20px rgba(236, 72, 153, 0.4);
+    }
+
+    .app-section-title.app-4 {
+      background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+      box-shadow: 0 4px 20px rgba(249, 115, 22, 0.4);
+    }
+
+    .app-section-divider {
+      width: 100%;
+      max-width: 800px;
+      height: 4px;
+      margin: 1.5rem auto 2rem auto;
+      border-radius: 2px;
+      position: relative;
+    }
+
+    .app-section-divider.divider-1 {
+      background: linear-gradient(90deg, transparent 0%, #6366f1 20%, #4f46e5 50%, #6366f1 80%, transparent 100%);
+    }
+
+    .app-section-divider.divider-2 {
+      background: linear-gradient(90deg, transparent 0%, #8b5cf6 20%, #7c3aed 50%, #8b5cf6 80%, transparent 100%);
+    }
+
+    .app-section-divider.divider-3 {
+      background: linear-gradient(90deg, transparent 0%, #ec4899 20%, #db2777 50%, #ec4899 80%, transparent 100%);
+    }
+
+    .app-section-title.app-5 {
+      background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
+      box-shadow: 0 4px 20px rgba(20, 184, 166, 0.4);
+    }
+
+    .app-section-divider.divider-4 {
+      background: linear-gradient(90deg, transparent 0%, #f97316 20%, #ea580c 50%, #f97316 80%, transparent 100%);
+    }
+
+    .app-section-divider.divider-5 {
+      background: linear-gradient(90deg, transparent 0%, #14b8a6 20%, #0d9488 50%, #14b8a6 80%, transparent 100%);
+    }
+
+    @media (max-width: 768px) {
+      .app-section-title {
+        font-size: 1.2rem;
+        padding: 10px 16px 10px 12px;
+        gap: 8px;
+      }
+      .app-emoji-badge {
+        font-size: 1rem;
+        padding: 6px 8px;
+        border-radius: 8px;
+      }
+    }
+
+    /* Diagram Styles */
+    .diagram-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 0.5rem;
+      width: 100%;
+      max-width: 1400px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .diagram-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.5rem;
+      width: 100%;
+      justify-items: center;
+    }
+
+    .diagram-input-placeholder {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      border: 3px dashed #ccc;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+      color: #888;
+      font-size: 0.9rem;
+      font-weight: 600;
+      font-family: 'Google Sans', sans-serif;
+      text-align: center;
+      padding: 0.5rem;
+      box-sizing: border-box;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .diagram-input-placeholder video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border-radius: 0;
+    }
+
+    .diagram-input-placeholder img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border-radius: 0;
+    }
+
+    .diagram-prompt-label.prompt-3 {
+      background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);
+      box-shadow: 0 3px 12px rgba(236, 72, 153, 0.4);
+    }
+
+    .diagram-text-prompt {
+      font-size: 0.9rem;
+      font-weight: 600;
+      font-style: italic;
+      color: white;
+      padding: 10px 14px;
+      text-align: center;
+      line-height: 1.4;
+      background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+      border-radius: 20px;
+      box-shadow: 0 3px 12px rgba(249, 115, 22, 0.4);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      margin: 8px;
+    }
+
+    .diagram-input-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+    }
+
+    .diagram-input-wrapper .diagram-input-placeholder {
+      aspect-ratio: 1 / 1;
+      padding: 0;
+      background: white;
+    }
+
+    .diagram-input-wrapper .diagram-input-placeholder.has-compound {
+      padding-bottom: 40px;
+    }
+
+    .diagram-input-wrapper .diagram-input-placeholder video,
+    .diagram-input-wrapper .diagram-input-placeholder img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border-radius: 9px;
+      background: transparent;
+    }
+
+    .diagram-input-legend {
+      padding: 4px 0;
+      font-size: 1rem;
+      font-weight: 600;
+      color: #6366f1;
+      margin-bottom: 0.15rem;
+      display: inline-block;
+      font-family: 'Google Sans', sans-serif;
+    }
+
+    .diagram-input-legend.legend-2 {
+      color: #8b5cf6;
+    }
+
+    .diagram-input-legend.legend-3 {
+      color: #ec4899;
+    }
+
+    .diagram-input-legend.legend-4 {
+      color: #f97316;
+    }
+
+    .diagram-prompt-label {
+      position: absolute;
+      bottom: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+      backdrop-filter: blur(4px);
+      padding: 6px 14px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      font-style: italic;
+      color: white;
+      border-radius: 20px;
+      white-space: nowrap;
+      box-shadow: 0 3px 12px rgba(139, 92, 246, 0.4);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .diagram-input-placeholder.input-1 { border-color: #6366f1; color: #6366f1; }
+    .diagram-input-placeholder.input-2 { border-color: #8b5cf6; color: #8b5cf6; }
+    .diagram-input-placeholder.input-3 { border-color: #ec4899; color: #ec4899; }
+    .diagram-input-placeholder.input-4 { border-color: #f97316; color: #f97316; }
+
+    .diagram-arrows-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.5rem;
+      width: 100%;
+      justify-items: center;
+      padding: 0.15rem 0;
+    }
+
+    .diagram-arrow {
+      font-size: 1.3rem;
+      line-height: 1;
+    }
+
+    .diagram-arrow.arrow-1 { color: #6366f1; }
+    .diagram-arrow.arrow-2 { color: #8b5cf6; }
+    .diagram-arrow.arrow-3 { color: #ec4899; }
+    .diagram-arrow.arrow-4 { color: #f97316; }
+
+    .diagram-center-row {
+      display: flex;
+      justify-content: center;
+      width: 100%;
+      padding: 0.15rem 0;
+    }
+
+    .actionmesh-box {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f97316 100%);
+      color: white;
+      padding: 0.5rem 2rem;
+      border-radius: 12px;
+      font-family: 'Google Sans', sans-serif;
+      font-size: 1.4rem;
+      font-weight: 700;
+      box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    @media (max-width: 768px) {
+      .diagram-input-placeholder {
+        font-size: 0.7rem;
+      }
+      .diagram-arrow {
+        font-size: 1.5rem;
+      }
+      .actionmesh-box {
+        font-size: 1.2rem;
+        padding: 0.8rem 1.5rem;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .application-platforms {
+        gap: 1rem;
+      }
+
+      .app-platform {
+        width: 140px;
+      }
+
+      .platform-video-container {
+        width: 120px;
+        height: 120px;
+      }
+
+      .platform-base {
+        width: 140px;
+        height: 45px;
+      }
+    }
+
+    /* Global rule to force all videos to have rectangular borders */
+    html body video,
+    html body .limitations-cell video,
+    html body .limitations-cell {
+      border-radius: 0 !important;
+    }
+
+    /* Video Carousel Styles */
+    .video-carousel-container {
+      width: 100%;
+      max-width: 1400px;
+      margin: 0 auto 2rem auto;
+      position: relative;
+    }
+
+    .video-carousel {
+      display: flex;
+      gap: 0.5rem;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .video-carousel-track {
+      display: flex;
+      gap: 0.5rem;
+      transition: transform 0.5s ease;
+    }
+
+    .video-carousel-item {
+      flex: 0 0 100%;
+      min-width: 100%;
+      position: relative;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    }
+
+    .video-carousel-item video {
+      width: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    .video-carousel-nav {
+      position: absolute;
+      bottom: 15px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border: none;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 22px;
+      font-weight: bold;
+      color: white;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.5);
+      z-index: 10;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .video-carousel-nav:hover {
+      background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+      transform: scale(1.1);
+      box-shadow: 0 6px 20px rgba(118, 75, 162, 0.6);
+    }
+
+    .video-carousel-nav.prev {
+      left: 10px;
+    }
+
+    .video-carousel-nav.next {
+      right: 10px;
+    }
+
+    .video-carousel-dots {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 1rem;
+    }
+
+    .video-carousel-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #ccc;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      padding: 0;
+    }
+
+    .video-carousel-dot.active {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      transform: scale(1.2);
+    }
+
+    .video-carousel-dot:hover {
+      background: #999;
+    }
+
+    .video-carousel-dot.active:hover {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    @media (max-width: 768px) {
+      .video-carousel-item {
+        flex: 0 0 100%;
+        min-width: 100%;
+      }
+
+      .video-carousel-nav {
+        width: 32px;
+        height: 32px;
+        font-size: 14px;
+      }
+
+      .video-carousel-nav.prev {
+        left: 5px;
+      }
+
+      .video-carousel-nav.next {
+        right: 5px;
+      }
+    }
+  </style>
+
+  <!-- Defer non-critical CSS -->
+  <link rel="preload" href="./static/css/bulma.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <link rel="preload" href="./static/css/fontawesome.all.min.css" as="style"
+    onload="this.onload=null;this.rel='stylesheet'">
+  <link rel="preload" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css" as="style"
+    onload="this.onload=null;this.rel='stylesheet'">
+  <link rel="preload" href="./static/css/main.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <link rel="preload" href="./static/css/index.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <link rel="preload" href="./static/css/index_dvs.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <link rel="preload" href="./static/css/index_img_to_4d.css" as="style"
+    onload="this.onload=null;this.rel='stylesheet'">
+  <link rel="preload" href="./static/css/index_txt_to_4d.css" as="style"
+    onload="this.onload=null;this.rel='stylesheet'">
+  <link rel="preload" href="./static/css/index_mesh_to_4d.css" as="style"
+    onload="this.onload=null;this.rel='stylesheet'">
+  <link rel="preload" href="./static/css/index_longseq.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <link rel="preload" href="./static/css/index_retargetting.css" as="style"
+    onload="this.onload=null;this.rel='stylesheet'">
+  <link rel="preload" href="./static/css/index_limitations.css" as="style"
+    onload="this.onload=null;this.rel='stylesheet'">
+
+  <!-- Fallback for browsers without JavaScript -->
+  <noscript>
+    <link rel="stylesheet" href="./static/css/bulma.min.css">
+    <link rel="stylesheet" href="./static/css/fontawesome.all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+    <link rel="stylesheet" href="./static/css/main.css">
+    <link rel="stylesheet" href="./static/css/index.css">
+    <link rel="stylesheet" href="./static/css/index_dvs.css">
+    <link rel="stylesheet" href="./static/css/index_img_to_4d.css">
+    <link rel="stylesheet" href="./static/css/index_txt_to_4d.css">
+    <link rel="stylesheet" href="./static/css/index_mesh_to_4d.css">
+    <link rel="stylesheet" href="./static/css/index_longseq.css">
+    <link rel="stylesheet" href="./static/css/index_retargetting.css">
+    <link rel="stylesheet" href="./static/css/index_limitations.css">
+  </noscript>
+
+  <!-- Async font loading with display swap -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;600&family=Noto+Sans:wght@400;600&family=Castoro&display=swap"
+    rel="stylesheet" media="print" onload="this.media='all'">
+  <noscript>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;600&family=Noto+Sans:wght@400;600&family=Castoro&display=swap"
+      rel="stylesheet">
+  </noscript>
+
+  <!-- Defer all JavaScript -->
+  <script defer src="./static/js/fontawesome.all.min.js"></script>
+  <script defer src="./static/js/video_config.js"></script>
+
+  <!-- Model Viewer for 3D/4D visualization -->
+  <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.3.0/model-viewer.min.js"></script>
+</head>
+
+<body>
+
+  <section class="hero">
+    <div class="hero-body">
+      <div class="container is-max-desktop">
+        <div class="columns is-centered">
+          <div class="column has-text-centered">
+<h1 class="title is-1 publication-title">🎬 <span class="method-name-4d">ActionMesh</span>: Animated 3D Mesh
+              Generation with Temporal 3D Diffusion
+            </h1>
+            <h2 class="title is-4 publication-title"></span></h2>
+            <div class="is-size-5 publication-authors">
+              <span class="author-block">
+                <a href="https://profiles.ucl.ac.uk/96179-remy-sabathier">Remy Sabathier</a><sup>1,3</sup>,</span>
+              <span class="author-block">
+                <a href="https://d-novotny.github.io/">David Novotny</a><sup>2</sup>,</span>
+              <span class="author-block">
+                <a href="http://www0.cs.ucl.ac.uk/staff/n.mitra/">Niloy J. Mitra</a><sup>3</sup>,</span>
+              <span class="author-block">
+                <a href="https://tmonnier.com/">Tom Monnier</a><sup>1</sup>,</span>
+            </div>
+            <div class="is-size-5 publication-authors">
+              <span class="author-block"><sup>1</sup>Meta Reality Labs,</span>
+              <span class="author-block"><sup>2</sup>SpAItial,</span>
+              <span class="author-block"><sup>3</sup>University College London</span>
+            </div>
+            <div class="publication-links" style="margin-top: 0.5rem;">
+              <!-- Arxiv Link. -->
+              <span class="link-block">
+                <a href=""
+                class="external-link button is-normal is-rounded" style="background-color: #b31b1b; color: white;">
+                  <span class="icon">
+                    <i class="ai ai-arxiv"></i>
+                  </span>
+                  <span>arXiv</span>
+                </a>
+              </span>
+              <!-- PDF Download Link. -->
+              <span class="link-block">
+                <a href=""
+                target="_blank" rel="noopener noreferrer" class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                    <i class="fas fa-file-pdf"></i>
+                  </span>
+                  <span>PDF</span>
+                </a>
+              </span>
+              <!-- Code Link -->
+              <span class="link-block">
+                <a href="https://github.com/facebookresearch/actionmesh"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fab fa-github"></i>
+                  </span>
+                  <span>Code</span>
+                </a>
+              </span>
+              <!-- Hugging Face Demo Link -->
+              <span class="link-block">
+                <a href="https://huggingface.co/spaces/facebook/ActionMesh"
+                   class="external-link button is-normal is-rounded" style="background-color: #FFD21E; color: #000;">
+                  <span class="icon">
+                      🤗
+                  </span>
+                  <span>Demo</span>
+                </a>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Video Carousel -->
+  <section class="section" style="padding-top: 0; padding-bottom: 0;">
+    <div class="container is-max-desktop">
+      <p class="platforms-summary"
+        style="font-size: 1.4rem; color: #444; margin-bottom: 1rem; font-family: 'Google Sans', sans-serif; text-align: center;">
+        <strong style="color: #4a90e2;">🎬 ActionMesh</strong> is a feed-forward <strong>video-to-4D model</strong> which generates <strong>high quality animated meshes</strong>.
+      </p>
+      <div class="video-carousel-container">
+        <div class="video-carousel">
+          <button class="video-carousel-nav prev" onclick="moveCarousel(-1)">❮</button>
+          <div class="video-carousel-track" id="carouselTrack">
+            <div class="video-carousel-item">
+              <video src="videos/carousel/horse_jump_high.mp4" loop muted autoplay playsinline></video>
+            </div>
+            <div class="video-carousel-item">
+              <video src="videos/carousel/camel.mp4" loop muted autoplay playsinline></video>
+            </div>
+            <div class="video-carousel-item">
+              <video src="videos/carousel/flamingo.mp4" loop muted autoplay playsinline></video>
+            </div>
+            <div class="video-carousel-item">
+              <video src="videos/carousel/gold_fish.mp4" loop muted autoplay playsinline></video>
+            </div>
+          </div>
+          <button class="video-carousel-nav next" onclick="moveCarousel(1)">❯</button>
+        </div>
+        <div class="video-carousel-dots">
+          <button class="video-carousel-dot active" onclick="goToSlide(0)"></button>
+          <button class="video-carousel-dot" onclick="goToSlide(1)"></button>
+          <button class="video-carousel-dot" onclick="goToSlide(2)"></button>
+          <button class="video-carousel-dot" onclick="goToSlide(3)"></button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Abstract. -->
+  <section class="section" style="padding-top: 0.5rem;">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+        <div class="column" style="max-width: 95%;">
+          <h2 class="title is-3">Abstract</h2>
+          <div class="content has-text-justified">
+            <div class="paragraph-container">
+              <p>
+                Generating animated 3D objects is at the heart of many applications, yet most advanced works are
+                typically difficult to apply in practice because of their limited setup, their long runtime, or their
+                limited quality.
+                We introduce ActionMesh, a generative model that predicts production-ready 3D meshes "in action" in a
+                feed-forward manner.
+                Drawing inspiration from early video models, our key insight is to modify existing 3D diffusion models
+                to include a temporal axis, resulting in a framework we dubbed "temporal 3D diffusion".
+                Specifically, we first adapt the 3D diffusion stage to generate a sequence of synchronized latents
+                representing time-varying and independent 3D shapes.
+                Second, we design a temporal 3D autoencoder that translates a sequence of independent shapes into the
+                corresponding deformations of a pre-defined reference shape, allowing us to build an animation.
+                Combining these two components, ActionMesh generates animated 3D meshes from different inputs like a
+                monocular video, a text description, or even a 3D mesh with a text prompt describing its animation.
+                Besides, compared to previous approaches, our method is fast and produces results that are rig-free and
+                topology consistent, hence enabling rapid iteration and seamless applications like texturing and
+                retargeting.
+                We evaluate our model on standard video-to-4D benchmarks (Consistent4D, Objaverse) and report
+                state-of-the-art performances on both geometric accuracy and temporal consistency, demonstrating that
+                our model can deliver animated 3D meshes with unprecedented speed and quality.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!--/ Abstract. -->
+
+  <!-- Interactive 4D Viewer -->
+  <section class="section" style="padding-bottom: 0;">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+        <div class="column">
+          <p class="platforms-summary"
+            style="font-size: 1.4rem; color: #444; margin-bottom: 1.5rem; font-family: 'Google Sans', sans-serif;">
+            Its <strong style="color: #4a90e2;">flexible design</strong> enables several <strong style="color: #4a90e2;">applications</strong>:
+          </p>
+          <!-- Diagram -->
+          <div class="diagram-container">
+            <!-- Row 1: Input placeholders -->
+            <div class="diagram-row">
+              <div class="diagram-input-wrapper">
+                <div class="diagram-input-legend">📹 Video</div>
+                <div class="diagram-input-placeholder input-1 has-video">
+                  <video src="videos/dvs/camel_input.mp4" loop muted autoplay playsinline style="pointer-events: none;"></video>
+                </div>
+              </div>
+              <div class="diagram-input-wrapper">
+                <div class="diagram-input-legend legend-2">📦 3D + ✏️ Text</div>
+                <div class="diagram-input-placeholder input-2 has-video has-compound">
+                  <video src="videos/mesh_to_4d/WAN_out_armadillo_1_003_input.mp4" loop muted autoplay playsinline style="pointer-events: none;"></video>
+                  <div class="diagram-prompt-label">"casually walking"</div>
+                </div>
+              </div>
+              <div class="diagram-input-wrapper">
+                <div class="diagram-input-legend legend-3">🖼️ Image + ✏️ Text</div>
+                <div class="diagram-input-placeholder input-3 has-compound">
+                  <img src="videos/img_to_4d/WAN_out_mushroom_1_000_input.png" alt="Mushroom input">
+                  <div class="diagram-prompt-label prompt-3">"singing opera"</div>
+                </div>
+              </div>
+              <div class="diagram-input-wrapper">
+                <div class="diagram-input-legend legend-4">✏️ Text</div>
+                <div class="diagram-input-placeholder input-4 has-text-only">
+                  <div class="diagram-text-prompt">"An octopus playing maracas"</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Arrows down -->
+            <div class="diagram-arrows-row">
+              <div class="diagram-arrow arrow-1">↓</div>
+              <div class="diagram-arrow arrow-2">↓</div>
+              <div class="diagram-arrow arrow-3">↓</div>
+              <div class="diagram-arrow arrow-4">↓</div>
+            </div>
+
+            <!-- ActionMesh box -->
+            <div class="diagram-center-row">
+              <div class="actionmesh-box">🎬 ActionMesh</div>
+            </div>
+
+            <!-- Arrows down -->
+            <div class="diagram-arrows-row">
+              <div class="diagram-arrow arrow-1">↓</div>
+              <div class="diagram-arrow arrow-2">↓</div>
+              <div class="diagram-arrow arrow-3">↓</div>
+              <div class="diagram-arrow arrow-4">↓</div>
+            </div>
+          </div>
+
+          <div class="viewer-4d-grid">
+            <!-- Viewer 1 -->
+            <div class="viewer-4d-item">
+              <a href="#app-video-to-4d" class="viewer-4d-label label-1">Video-to-4D</a>
+              <div class="viewer-4d-wrapper">
+                <model-viewer
+                  id="mesh-viewer-1"
+                  src="3D/camel.glb"
+                  camera-controls
+                  shadow-intensity="0"
+                  exposure="1"
+                  neutral-lighting
+                  autoplay
+                  animation-playback-rate="0.27"
+                  camera-orbit="140deg 80deg 3.5m"
+                  field-of-view="30deg"
+                  touch-action="pan-y"
+                  ar
+                  ar-modes="webxr scene-viewer quick-look">
+                </model-viewer>
+              </div>
+              <div class="viewer-4d-controls">
+                <button class="playPauseBtn btn-1" data-viewer="mesh-viewer-1">⏸ Pause</button>
+              </div>
+            </div>
+            <!-- Viewer 2 -->
+            <div class="viewer-4d-item">
+              <a href="#app-3d-text-to-4d" class="viewer-4d-label label-2">{3D+text}-to-4D</a>
+              <div class="viewer-4d-wrapper">
+                <model-viewer
+                  id="mesh-viewer-2"
+                  src="3D/armadillo.glb"
+                  camera-controls
+                  shadow-intensity="0"
+                  exposure="1"
+                  neutral-lighting
+                  autoplay
+                  animation-playback-rate="0.27"
+                  camera-orbit="190deg 90deg 4.2m"
+                  field-of-view="30deg"
+                  touch-action="pan-y"
+                  ar
+                  ar-modes="webxr scene-viewer quick-look">
+                </model-viewer>
+              </div>
+              <div class="viewer-4d-controls">
+                <button class="playPauseBtn btn-2" data-viewer="mesh-viewer-2">⏸ Pause</button>
+              </div>
+            </div>
+            <!-- Viewer 3 -->
+            <div class="viewer-4d-item">
+              <a href="#app-image-text-to-4d" class="viewer-4d-label label-3">{Image+text}-to-4D</a>
+              <div class="viewer-4d-wrapper">
+                <model-viewer
+                  id="mesh-viewer-3"
+                  src="3D/mushroom.glb"
+                  camera-controls
+                  shadow-intensity="0"
+                  exposure="1"
+                  neutral-lighting
+                  autoplay
+                  animation-playback-rate="0.27"
+                  camera-orbit="270deg 80deg 4.5m"
+                  field-of-view="30deg"
+                  touch-action="pan-y"
+                  ar
+                  ar-modes="webxr scene-viewer quick-look">
+                </model-viewer>
+              </div>
+              <div class="viewer-4d-controls">
+                <button class="playPauseBtn btn-3" data-viewer="mesh-viewer-3">⏸ Pause</button>
+              </div>
+            </div>
+            <!-- Viewer 4 -->
+            <div class="viewer-4d-item">
+              <a href="#app-text-to-4d" class="viewer-4d-label label-4">Text-to-4D</a>
+              <div class="viewer-4d-wrapper">
+                <model-viewer
+                  id="mesh-viewer-4"
+                  src="3D/octopus.glb"
+                  camera-controls
+                  shadow-intensity="0"
+                  exposure="1"
+                  neutral-lighting
+                  autoplay
+                  animation-playback-rate="0.27"
+                  camera-orbit="270deg 80deg 4.5m"
+                  field-of-view="30deg"
+                  touch-action="pan-y"
+                  ar
+                  ar-modes="webxr scene-viewer quick-look">
+                </model-viewer>
+              </div>
+              <div class="viewer-4d-controls">
+                <button class="playPauseBtn btn-4" data-viewer="mesh-viewer-4">⏸ Pause</button>
+              </div>
+            </div>
+          </div>
+          <p class="has-text-centered" style="font-size: 0.85rem; color: #888; margin-top: 1rem;">
+            Drag to rotate • Scroll to zoom • Click button to pause/play animation
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!--/ Interactive 4D Viewer -->
+
+
+  <!-- Application: video-to-4D -->
+  <section class="section" id="app-video-to-4d">
+    <div class="container is-max-desktop">
+      <div class="container is-centered has-text-centered">
+        <h2 class="app-section-title app-1"><span class="app-emoji-badge">📹</span> Application 1: video-to-4D</h2>
+        <div class="app-section-divider divider-1"></div>
+
+        <!-- Subtitle: DAVIS real-scenes -->
+        <div style="display: flex; align-items: center; justify-content: center; gap: 1rem; margin-top: 2rem; margin-bottom: 1.5rem;">
+          <h3 class="title is-4" style="margin: 0;">A. Results on DAVIS - </h3>
+          <div class="io-set-buttons" style="margin: 0;">
+            <button class="io-set-button io-active" data-set="1">Set 1</button>
+            <button class="io-set-button" data-set="2">Set 2</button>
+          </div>
+        </div>
+        <div class="content is-centered has-text-centered has-text-justified">
+
+          <div class="io-video-table" id="io-grid">
+            <!-- Column headers (fixed) -->
+            <div class="io-header-row">
+              <div class="io-header-cell">Input</div>
+              <div class="io-header-cell">Ours</div>
+              <div class="io-header-cell io-pair-gap-left">Input</div>
+              <div class="io-header-cell">Ours</div>
+            </div>
+
+            <!-- ===================== SET 1 ===================== -->
+            <div class="io-video-set io-active" data-set="1">
+              <!-- Row 1: (1,2) -->
+              <div class="io-video-row" data-row="1">
+                <div class="io-cell">
+                  <video src="videos/dvs/bear_input.mp4" loop muted autoplay playsinline preload="metadata"
+                    controls></video>
+                </div>
+                <div class="io-cell">
+                  <video src="videos/dvs/bear_MOTUS.mp4" loop muted autoplay playsinline preload="metadata"
+                    controls></video>
+                </div>
+                <div class="io-cell">
+                  <video src="videos/dvs/camel_input.mp4" loop muted autoplay playsinline preload="metadata"
+                    controls></video>
+                </div>
+                <div class="io-cell">
+                  <video src="videos/dvs/camel_MOTUS.mp4" loop muted autoplay playsinline preload="metadata"
+                    controls></video>
+                </div>
+              </div>
+
+              <!-- Row 2: (3,4) -->
+              <div class="io-video-row" data-row="2">
+                <div class="io-cell">
+                  <video src="videos/dvs/flamingo_input.mp4" loop muted autoplay playsinline preload="metadata"
+                    controls></video>
+                </div>
+                <div class="io-cell">
+                  <video src="videos/dvs/flamingo_MOTUS.mp4" loop muted autoplay playsinline preload="metadata"
+                    controls></video>
+                </div>
+                <div class="io-cell">
+                  <video src="videos/dvs/horsejump-high_input.mp4" loop muted autoplay playsinline preload="metadata"
+                    controls></video>
+                </div>
+                <div class="io-cell">
+                  <video src="videos/dvs/horsejump-high_MOTUS.mp4" loop muted autoplay playsinline preload="metadata"
+                    controls></video>
+                </div>
+              </div>
+            </div>
+
+            <!-- ===================== SET 2 ===================== -->
+            <div class="io-video-set" data-set="2">
+              <!-- Row 3: (5,6) -->
+              <div class="io-video-row" data-row="3">
+                <div class="io-cell">
+                  <video src="videos/dvs/gold-fish_input.mp4" loop muted playsinline preload="none" controls></video>
+                </div>
+                <div class="io-cell">
+                  <video src="videos/dvs/gold-fish_MOTUS.mp4" loop muted playsinline preload="none" controls></video>
+                </div>
+                <div class="io-cell">
+                  <video src="videos/dvs/elephant_input.mp4" loop muted playsinline preload="none" controls></video>
+                </div>
+                <div class="io-cell">
+                  <video src="videos/dvs/elephant_MOTUS.mp4" loop muted playsinline preload="none" controls></video>
+                </div>
+              </div>
+
+              <!-- Row 4: (7,8) -->
+              <div class="io-video-row" data-row="4">
+                <div class="io-cell">
+                  <video src="videos/dvs/horsejump-low_input.mp4" loop muted playsinline preload="none"
+                    controls></video>
+                </div>
+                <div class="io-cell">
+                  <video src="videos/dvs/horsejump-low_MOTUS.mp4" loop muted playsinline preload="none"
+                    controls></video>
+                </div>
+                <div class="io-cell">
+                  <video src="videos/dvs/cows_input.mp4" loop muted playsinline preload="none" controls></video>
+                </div>
+                <div class="io-cell">
+                  <video src="videos/dvs/cows_MOTUS.mp4" loop muted playsinline preload="none" controls></video>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Reference to external JS (after the HTML so elements exist) -->
+          <script defer src="./static/js/index_dvs.js"></script>
+        </div>
+
+        <!-- Subtitle: Consistent4D EvalSet -->
+        <div style="display: flex; align-items: center; justify-content: center; gap: 1rem; margin-top: 2rem; margin-bottom: 1.5rem;">
+          <h3 class="title is-4" style="margin: 0;">B. Comparison to SOTA</h3>
+          <div class="set-buttons" style="margin: 0;">
+            <button class="set-button active" data-set="1">Set 1</button>
+            <button class="set-button" data-set="2">Set 2</button>
+            <button class="set-button" data-set="3">Set 3</button>
+          </div>
+        </div>
+        <div class="content is-centered has-text-centered has-text-justified">
+
+          <div class="video-table">
+            <!-- Column headers (fixed) -->
+            <div class="header-row">
+              <div class="header-cell">Input</div>
+              <div class="header-cell">LIM</div>
+              <div class="header-cell">DM4D</div>
+              <div class="header-cell">V2M4</div>
+              <div class="header-cell">SG4D</div>
+              <div class="header-cell">Ours</div>
+            </div>
+
+            <!-- ===================== SET 1 (rows 1–3) ===================== -->
+            <div class="video-set active" data-set="1">
+              <!-- Row 1 -->
+              <div class="video-row" data-row="1">
+                <div class="cell">
+                  <video src="videos/c4d/synthetic__running_triceratops_input.mp4" loop muted autoplay playsinline
+                    preload="metadata" controls></video>
+                </div>
+                <div class="cell">
+                  <video src="videos/c4d/synthetic__running_triceratops_LIM.mp4" loop muted autoplay playsinline
+                    preload="metadata" controls></video>
+                </div>
+                <div class="cell">
+                  <video src="videos/c4d/synthetic__running_triceratops_DM4D.mp4" loop muted autoplay playsinline
+                    preload="metadata" controls></video>
+                </div>
+                <div class="cell">
+                  <video src="videos/c4d/synthetic__running_triceratops_V2M4.mp4" loop muted autoplay playsinline
+                    preload="metadata" controls></video>
+                </div>
+                <div class="cell">
+                  <video src="videos/c4d/synthetic__running_triceratops_SHAPEGEN.mp4" loop muted autoplay playsinline
+                    preload="metadata" controls></video>
+                </div>
+                <div class="cell">
+                  <video src="videos/c4d/synthetic__running_triceratops_MOTUS.mp4" loop muted autoplay playsinline
+                    preload="metadata" controls></video>
+                </div>
+              </div>
+
+              <!-- Row 2 -->
+              <div class="video-row" data-row="2">
+                <div class="cell">
+                  <video src="videos/c4d/synthetic__dancing_patrick_star_input.mp4" loop muted autoplay playsinline
+                    preload="metadata" controls></video>
+                </div>
+                <div class="cell">
+                  <video src="videos/c4d/synthetic__dancing_patrick_star_LIM.mp4" loop muted autoplay playsinline
+                    preload="metadata" controls></video>
+                </div>
+                <div class="cell">
+                  <video src="videos/c4d/synthetic__dancing_patrick_star_DM4D.mp4" loop muted autoplay playsinline
+                    preload="metadata" controls></video>
+                </div>
+                <div class="cell">
+                  <video src="videos/c4d/synthetic__dancing_patrick_star_V2M4.mp4" loop muted autoplay playsinline
+                    preload="metadata" controls></video>
+                </div>
+                <div class="cell">
+                  <video src="videos/c4d/synthetic__dancing_patrick_star_SHAPEGEN.mp4" loop muted autoplay playsinline
+                    preload="metadata" controls></video>
+                </div>
+                <div class="cell">
+                  <video src="videos/c4d/synthetic__dancing_patrick_star_MOTUS.mp4" loop muted autoplay playsinline
+                    preload="metadata" controls></video>
+                </div>
+              </div>
+
+              <!-- Row 3 -->
+              <div class="video-row" data-row="3">
+                <div class="cell">
+                  <video src="videos/c4d/synthetic__idling_elephant_input.mp4" loop muted autoplay playsinline
+                    preload="metadata" controls></video>
+                </div>
+                <div class="cell">
+                  <video src="videos/c4d/synthetic__idling_elephant_LIM.mp4" loop muted autoplay playsinline
+                    preload="metadata" controls></video>
+                </div>
+                <div class="cell">
+                  <video src="videos/c4d/synthetic__idling_elephant_DM4D.mp4" loop muted autoplay playsinline
+                    preload="metadata" controls></video>
+                </div>
+                <div class="cell">
+                  <video src="videos/c4d/synthetic__idling_elephant_V2M4.mp4" loop muted autoplay playsinline
+                    preload="metadata" controls></video>
+                </div>
+                <div class="cell">
+                  <video src="videos/c4d/synthetic__idling_elephant_SHAPEGEN.mp4" loop muted autoplay playsinline
+                    preload="metadata" controls></video>
+                </div>
+                <div class="cell">
+                  <video src="videos/c4d/synthetic__idling_elephant_MOTUS.mp4" loop muted autoplay playsinline
+                    preload="metadata" controls></video>
+                </div>
+              </div>
+            </div>
+
+            <!-- ===================== SET 2 (rows 4–6) ===================== -->
+            <div class="video-set" data-set="2">
+              <!-- Row 4 -->
+              <div class="video-row" data-row="4">
+                <div class="cell">
+                  <video src="videos/c4d/synthetic__walking_astronaut_input.mp4" loop muted playsinline preload="none"
+                    controls></video>
+                </div>
+                <div class="cell">
+                  <video src="videos/c4d/synthetic__walking_astronaut_LIM.mp4" loop muted playsinline preload="none"
+                    controls></video>
+                </div>
+                <div class="cell">
+                  <video src="videos/c4d/synthetic__walking_astronaut_DM4D.mp4" loop muted playsinline preload="none"
+                    controls></video>
+                </div>
+                <div class="cell">
+                  <video src="videos/c4d/synthetic__walking_astronaut_V2M4.mp4" loop muted playsinline preload="none"
+                    controls></video>
+                </div>
+                <div class="cell">
+                  <video src="videos/c4d/synthetic__walking_astronaut_SHAPEGEN.mp4" loop muted playsinline
+                    preload="none" controls></video>
+                </div>
+                <div class="cell">
+                  <video src="videos/c4d/synthetic__walking_astronaut_MOTUS.mp4" loop muted playsinline preload="none"
+                    controls></video>
+                </div>
+              </div>
+
+              <!-- Row 5 -->
+              <div class="video-row" data-row="5">
+                <div class="cell">
+                  <video src="videos/c4d/synthetic__swimming_yellow_tang_input.mp4" loop muted playsinline
+                    preload="none" controls></video>
+                </div>
+                <div class="cell">
+                  <video src="videos/c4d/synthetic__swimming_yellow_tang_LIM.mp4" loop muted playsinline preload="none"
+                    controls></video>
+                </div>
+                <div class="cell">
+                  <video src="videos/c4d/synthetic__swimming_yellow_tang_DM4D.mp4" loop muted playsinline preload="none"
+                    controls></video>
+                </div>
+                <div class="cell">
+                  <video src="videos/c4d/synthetic__swimming_yellow_tang_V2M4.mp4" loop muted playsinline preload="none"
+                    controls></video>
+                </div>
+                <div class="cell">
+                  <video src="videos/c4d/synthetic__swimming_yellow_tang_SHAPEGEN.mp4" loop muted playsinline
+                    preload="none" controls></video>
+                </div>
+                <div class="cell">
+                  <video src="videos/c4d/synthetic__swimming_yellow_tang_MOTUS.mp4" loop muted playsinline
+                    preload="none" controls></video>
+                </div>
+              </div>
+
+              <!-- Row 6 -->
+              <div class="video-row" data-row="6">
+                <div class="cell">
+                  <video src="videos/c4d/in-the-wild__dancing_robot_input.mp4" loop muted playsinline preload="none"
+                    controls></video>
+                </div>
+                <div class="cell">
+                  <video src="videos/c4d/in-the-wild__dancing_robot_LIM.mp4" loop muted playsinline preload="none"
+                    controls></video>
+                </div>
+                <div class="cell">
+                  <video src="videos/c4d/in-the-wild__dancing_robot_DM4D.mp4" loop muted playsinline preload="none"
+                    controls></video>
+                </div>
+                <div class="cell">
+                  <video src="videos/c4d/in-the-wild__dancing_robot_V2M4.mp4" loop muted playsinline preload="none"
+                    controls></video>
+                </div>
+                <div class="cell">
+                  <video src="videos/c4d/in-the-wild__dancing_robot_SHAPEGEN.mp4" loop muted playsinline preload="none"
+                    controls></video>
+                </div>
+                <div class="cell">
+                  <video src="videos/c4d/in-the-wild__dancing_robot_MOTUS.mp4" loop muted playsinline preload="none"
+                    controls></video>
+                </div>
+              </div>
+            </div>
+
+            <!-- ===================== SET 3 (rows 7–9) ===================== -->
+            <div class="video-set" data-set="3">
+              <!-- Row 7 -->
+              <div class="video-row" data-row="7">
+                <div class="cell">
+                  <video src="videos/c4d/in-the-wild__pecking_blue_jay_input.mp4" loop muted playsinline preload="none"
+                    controls></video>
+                </div>
+                <div class="cell">
+                  <video src="videos/c4d/in-the-wild__pecking_blue_jay_LIM.mp4" loop muted playsinline preload="none"
+                    controls></video>
+                </div>
+                <div class="cell">
+                  <video src="videos/c4d/in-the-wild__pecking_blue_jay_DM4D.mp4" loop muted playsinline preload="none"
+                    controls></video>
+                </div>
+                <div class="cell">
+                  <video src="videos/c4d/in-the-wild__pecking_blue_jay_V2M4.mp4" loop muted playsinline preload="none"
+                    controls></video>
+                </div>
+                <div class="cell">
+                  <video src="videos/c4d/in-the-wild__pecking_blue_jay_SHAPEGEN.mp4" loop muted playsinline
+                    preload="none" controls></video>
+                </div>
+                <div class="cell">
+                  <video src="videos/c4d/in-the-wild__pecking_blue_jay_MOTUS.mp4" loop muted playsinline preload="none"
+                    controls></video>
+                </div>
+              </div>
+
+              <!-- Row 8 -->
+              <div class="video-row" data-row="8">
+                <div class="cell">
+                  <video src="videos/c4d/synthetic__walking_aurorus_input.mp4" loop muted playsinline preload="none"
+                    controls></video>
+                </div>
+                <div class="cell">
+                  <video src="videos/c4d/synthetic__walking_aurorus_LIM.mp4" loop muted playsinline preload="none"
+                    controls></video>
+                </div>
+                <div class="cell">
+                  <video src="videos/c4d/synthetic__walking_aurorus_DM4D.mp4" loop muted playsinline preload="none"
+                    controls></video>
+                </div>
+                <div class="cell">
+                  <video src="videos/c4d/synthetic__walking_aurorus_V2M4.mp4" loop muted playsinline preload="none"
+                    controls></video>
+                </div>
+                <div class="cell">
+                  <video src="videos/c4d/synthetic__walking_aurorus_SHAPEGEN.mp4" loop muted playsinline preload="none"
+                    controls></video>
+                </div>
+                <div class="cell">
+                  <video src="videos/c4d/synthetic__walking_aurorus_MOTUS.mp4" loop muted playsinline preload="none"
+                    controls></video>
+                </div>
+              </div>
+
+              <!-- Row 9 -->
+              <div class="video-row" data-row="9">
+                <div class="cell">
+                  <video src="videos/c4d/synthetic__scaring_skull_input.mp4" loop muted playsinline preload="none"
+                    controls></video>
+                </div>
+                <div class="cell">
+                  <video src="videos/c4d/synthetic__scaring_skull_LIM.mp4" loop muted playsinline preload="none"
+                    controls></video>
+                </div>
+                <div class="cell">
+                  <video src="videos/c4d/synthetic__scaring_skull_DM4D.mp4" loop muted playsinline preload="none"
+                    controls></video>
+                </div>
+                <div class="cell">
+                  <video src="videos/c4d/synthetic__scaring_skull_V2M4.mp4" loop muted playsinline preload="none"
+                    controls></video>
+                </div>
+                <div class="cell">
+                  <video src="videos/c4d/synthetic__scaring_skull_SHAPEGEN.mp4" loop muted playsinline preload="none"
+                    controls></video>
+                </div>
+                <div class="cell">
+                  <video src="videos/c4d/synthetic__scaring_skull_MOTUS.mp4" loop muted playsinline preload="none"
+                    controls></video>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Reference to external JS (after the HTML so elements exist) -->
+          <script defer src="./static/js/index_c4d.js"></script>
+        </div>
+
+        <!-- Subtitle: Long animations with autoregressive generation -->
+        <h3 class="title is-4" style="margin-top: 2rem; margin-bottom: 1.5rem;">C. Longer animations generation (61 frames)</h3>
+        <div class="content is-centered has-text-centered has-text-justified">
+
+          <div class="longseq-video-table" id="longseq-grid">
+            <!-- Column headers (fixed) -->
+            <div class="longseq-header-row">
+              <div class="longseq-header-cell">Input</div>
+              <div class="longseq-header-cell">Ours</div>
+              <div class="longseq-header-cell">Input</div>
+              <div class="longseq-header-cell">Ours</div>
+            </div>
+
+            <!-- Row 1 -->
+            <div class="longseq-video-row" data-row="1">
+              <div class="longseq-cell">
+                <video src="videos/longseq/000-022_d09f333cb04e4bbdb715d099f3446fc2_input.mp4" loop muted autoplay
+                  playsinline preload="metadata" controls></video>
+              </div>
+              <div class="longseq-cell">
+                <video src="videos/longseq/000-022_d09f333cb04e4bbdb715d099f3446fc2_MOTUS.mp4" loop muted autoplay
+                  playsinline preload="metadata" controls></video>
+              </div>
+              <div class="longseq-cell">
+                <video src="videos/longseq/000-042_7644ff801d38454d92ff5de65dcbea31_input.mp4" loop muted autoplay
+                  playsinline preload="metadata" controls></video>
+              </div>
+              <div class="longseq-cell">
+                <video src="videos/longseq/000-042_7644ff801d38454d92ff5de65dcbea31_MOTUS.mp4" loop muted autoplay
+                  playsinline preload="metadata" controls></video>
+              </div>
+            </div>
+
+            <!-- Row 2 -->
+            <div class="longseq-video-row" data-row="2">
+              <div class="longseq-cell">
+                <video src="videos/longseq/000-057_e8872ef199124f32a157d177fb124163_input.mp4" loop muted autoplay
+                  playsinline preload="metadata" controls></video>
+              </div>
+              <div class="longseq-cell">
+                <video src="videos/longseq/000-057_e8872ef199124f32a157d177fb124163_MOTUS.mp4" loop muted autoplay
+                  playsinline preload="metadata" controls></video>
+              </div>
+              <div class="longseq-cell">
+                <video src="videos/longseq/000-128_030d9e43df9840dbb57f599843d6953a_input.mp4" loop muted autoplay
+                  playsinline preload="metadata" controls></video>
+              </div>
+              <div class="longseq-cell">
+                <video src="videos/longseq/000-128_030d9e43df9840dbb57f599843d6953a_MOTUS.mp4" loop muted autoplay
+                  playsinline preload="metadata" controls></video>
+              </div>
+            </div>
+          </div>
+          <!-- Reference to external JS (after the HTML so elements exist) -->
+          <script defer src="./static/js/index_longseq.js"></script>
+        </div>
+      </div>
+  </section>
+
+  <!-- Application: 3D+text-to-4D -->
+  <section class="section" id="app-3d-text-to-4d">
+    <div class="container is-max-desktop">
+      <div class="container is-centered has-text-centered">
+        <div style="display: flex; align-items: center; justify-content: center; gap: 1rem; flex-wrap: wrap;">
+            <h2 class="app-section-title app-2" style="margin: 0;"><span class="app-emoji-badge">📦+✏️</span> Application 2: {3D+text}-to-4D</h2>
+            <div class="mesh-to-4d-set-buttons" style="margin: 0;">
+              <button class="mesh-to-4d-set-button mesh-to-4d-active" data-set="1">Set 1</button>
+              <button class="mesh-to-4d-set-button" data-set="2">Set 2</button>
+            </div>
+          </div>
+          <div class="app-section-divider divider-2"></div>
+          <div class="content is-centered has-text-centered has-text-justified">
+
+          <div class="mesh-to-4d-video-table" id="mesh-to-4d-grid">
+            <!-- Column headers (fixed) -->
+            <div class="mesh-to-4d-header-row">
+              <div class="mesh-to-4d-header-cell">Input</div>
+              <div class="mesh-to-4d-header-cell">Ours</div>
+              <div class="mesh-to-4d-header-cell">Input</div>
+              <div class="mesh-to-4d-header-cell">Ours</div>
+            </div>
+
+            <!-- ===================== SET 1 ===================== -->
+            <div class="mesh-to-4d-video-set mesh-to-4d-active" data-set="1">
+              <!-- Row 1: 2 scenes -->
+              <div class="mesh-to-4d-video-row" data-row="1">
+                <div class="mesh-to-4d-cell">
+                <video src="videos/mesh_to_4d/WAN_out_armadillo_1_003_input.mp4" loop muted autoplay playsinline
+                    preload="metadata"></video>
+                  <div class="mesh-to-4d-plus">+</div>
+                  <div class="mesh-to-4d-prompt">"casually walking"</div>
+                </div>
+                <div class="mesh-to-4d-cell">
+                  <video src="videos/mesh_to_4d/WAN_out_armadillo_1_003_MOTUS.mp4" loop muted autoplay playsinline
+                    preload="metadata" controls></video>
+                </div>
+                <div class="mesh-to-4d-cell">
+                  <video src="videos/mesh_to_4d/WAN_out_cow_2_003_input.mp4" loop muted autoplay playsinline
+                    preload="metadata"></video>
+                  <div class="mesh-to-4d-plus">+</div>
+                  <div class="mesh-to-4d-prompt">"happily nodding"</div>
+                </div>
+                <div class="mesh-to-4d-cell">
+                  <video src="videos/mesh_to_4d/WAN_out_cow_2_003_MOTUS.mp4" loop muted autoplay playsinline
+                    preload="metadata" controls></video>
+                </div>
+              </div>
+
+              <!-- Row 2: 2 more scenes -->
+              <div class="mesh-to-4d-video-row" data-row="2">
+                <div class="mesh-to-4d-cell">
+                  <video src="videos/mesh_to_4d/WAN_out_ninja_panda_1_004_input.mp4" loop muted autoplay playsinline
+                    preload="metadata"></video>
+                  <div class="mesh-to-4d-plus">+</div>
+                  <div class="mesh-to-4d-prompt">"doing martial-art"</div>
+                </div>
+                <div class="mesh-to-4d-cell">
+                  <video src="videos/mesh_to_4d/WAN_out_ninja_panda_1_004_MOTUS.mp4" loop muted autoplay playsinline
+                    preload="metadata" controls></video>
+                </div>
+                <div class="mesh-to-4d-cell">
+                  <video src="videos/mesh_to_4d/WAN_out_squid_1_006_input.mp4" loop muted autoplay playsinline
+                    preload="metadata"></video>
+                  <div class="mesh-to-4d-plus">+</div>
+                  <div class="mesh-to-4d-prompt">"spreading its tentacles"</div>
+                </div>
+                <div class="mesh-to-4d-cell">
+                  <video src="videos/mesh_to_4d/WAN_out_squid_1_006_MOTUS.mp4" loop muted autoplay playsinline
+                    preload="metadata" controls></video>
+                </div>
+              </div>
+            </div>
+
+            <!-- ===================== SET 2 ===================== -->
+            <div class="mesh-to-4d-video-set" data-set="2">
+              <!-- Row 3: 2 scenes -->
+              <div class="mesh-to-4d-video-row" data-row="3">
+                <div class="mesh-to-4d-cell">
+                  <video src="videos/mesh_to_4d/WAN_out_raimbow_fish_1_003_input.mp4" loop muted playsinline
+                    preload="none"></video>
+                  <div class="mesh-to-4d-plus">+</div>
+                  <div class="mesh-to-4d-prompt">"swimming"</div>
+                </div>
+                <div class="mesh-to-4d-cell">
+                  <video src="videos/mesh_to_4d/WAN_out_raimbow_fish_1_003_MOTUS.mp4" loop muted playsinline
+                    preload="none" controls></video>
+                </div>
+                <div class="mesh-to-4d-cell">
+                  <video src="videos/mesh_to_4d/WAN_out_firefly_1_005_input.mp4" loop muted playsinline
+                    preload="none"></video>
+                  <div class="mesh-to-4d-plus">+</div>
+                  <div class="mesh-to-4d-prompt">"flapping its wings"</div>
+                </div>
+                <div class="mesh-to-4d-cell">
+                  <video src="videos/mesh_to_4d/WAN_out_firefly_1_005_MOTUS.mp4" loop muted playsinline preload="none"
+                    controls></video>
+                </div>
+              </div>
+
+              <!-- Row 4: 2 more scenes -->
+              <div class="mesh-to-4d-video-row" data-row="4">
+                <div class="mesh-to-4d-cell">
+                  <video src="videos/mesh_to_4d/WAN_out_giraffe_skiing_1_006_input.mp4" loop muted playsinline
+                    preload="none"></video>
+                  <div class="mesh-to-4d-plus">+</div>
+                  <div class="mesh-to-4d-prompt">"skiing"</div>
+                </div>
+                <div class="mesh-to-4d-cell">
+                  <video src="videos/mesh_to_4d/WAN_out_giraffe_skiing_1_006_MOTUS.mp4" loop muted playsinline
+                    preload="none" controls></video>
+                </div>
+                <div class="mesh-to-4d-cell">
+                  <video src="videos/mesh_to_4d/WAN_a_gummy_bear_playing_the_saxophone_1_005_input.mp4" loop muted
+                    playsinline preload="none"></video>
+                  <div class="mesh-to-4d-plus">+</div>
+                  <div class="mesh-to-4d-prompt">"playing jazz"</div>
+                </div>
+                <div class="mesh-to-4d-cell">
+                  <video src="videos/mesh_to_4d/WAN_a_gummy_bear_playing_the_saxophone_1_005_MOTUS.mp4" loop muted
+                    playsinline preload="none" controls></video>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Reference to external JS (after the HTML so elements exist) -->
+          <script defer src="./static/js/mesh_to_4d.js"></script>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- Application3: 3D+text-to-4D -->
+
+  <!-- Application: Image-to-4D -->
+  <section class="section" id="app-image-text-to-4d">
+    <div class="container is-max-desktop">
+      <div class="container is-centered has-text-centered">
+        <div style="display: flex; align-items: center; justify-content: center; gap: 1rem; flex-wrap: wrap;">
+            <h2 class="app-section-title app-3" style="margin: 0;"><span class="app-emoji-badge">🖼️+✏️</span> Application 3: {image+text}-to-4D</h2>
+            <div class="img-to-4d-set-buttons" style="margin: 0;">
+              <button class="img-to-4d-set-button img-to-4d-active" data-set="1">Set 1</button>
+              <button class="img-to-4d-set-button" data-set="2">Set 2</button>
+              <button class="img-to-4d-set-button" data-set="3">Set 3</button>
+            </div>
+          </div>
+        <div class="app-section-divider divider-3"></div>
+        <div class="content is-centered has-text-centered has-text-justified">
+
+          <div class="img-to-4d-video-table" id="img-to-4d-grid">
+            <!-- Column headers (fixed) -->
+            <div class="img-to-4d-header-row">
+              <div class="img-to-4d-header-cell">Input</div>
+              <div class="img-to-4d-header-cell">Ours</div>
+              <div class="img-to-4d-header-cell">Input</div>
+              <div class="img-to-4d-header-cell">Ours</div>
+            </div>
+
+            <!-- ===================== SET 1 ===================== -->
+            <div class="img-to-4d-video-set img-to-4d-active" data-set="1">
+              <!-- Row 1: 2 scenes -->
+              <div class="img-to-4d-video-row" data-row="1">
+                <div class="img-to-4d-cell">
+                  <img src="videos/img_to_4d/WAN_out_astronaut_1_000_input.png" alt="Scene 1 Input">
+                  <div class="img-to-4d-plus">+</div>
+                  <div class="img-to-4d-prompt">"dancing"</div>
+                </div>
+                <div class="img-to-4d-cell">
+                  <video src="videos/img_to_4d/WAN_out_astronaut_1_000_MOTUS.mp4" loop muted autoplay playsinline
+                    preload="metadata" controls></video>
+                </div>
+                <div class="img-to-4d-cell">
+                  <img src="videos/img_to_4d/WAN_out_dog_1_000_input.png" alt="Scene 2 Input">
+                  <div class="img-to-4d-plus">+</div>
+                  <div class="img-to-4d-prompt">"lying down"</div>
+                </div>
+                <div class="img-to-4d-cell">
+                  <video src="videos/img_to_4d/WAN_out_dog_1_000_MOTUS.mp4" loop muted autoplay playsinline
+                    preload="metadata" controls></video>
+                </div>
+              </div>
+
+              <!-- Row 2: 2 more scenes -->
+              <div class="img-to-4d-video-row" data-row="2">
+                <div class="img-to-4d-cell">
+                  <img src="videos/img_to_4d/WAN_out_fantasygirl_1_000_input.png" alt="Scene 3 Input">
+                  <div class="img-to-4d-plus">+</div>
+                  <div class="img-to-4d-prompt">"showing her weapon"</div>
+                </div>
+                <div class="img-to-4d-cell">
+                  <video src="videos/img_to_4d/WAN_out_fantasygirl_1_000_MOTUS.mp4" loop muted autoplay playsinline
+                    preload="metadata" controls></video>
+                </div>
+                <div class="img-to-4d-cell">
+                  <img src="videos/img_to_4d/WAN_out_knightduck_1_000_input.png" alt="Scene 4 Input">
+                  <div class="img-to-4d-plus">+</div>
+                  <div class="img-to-4d-prompt">"side-jumping"</div>
+                </div>
+                <div class="img-to-4d-cell">
+                  <video src="videos/img_to_4d/WAN_out_knightduck_1_000_MOTUS.mp4" loop muted autoplay playsinline
+                    preload="metadata" controls></video>
+                </div>
+              </div>
+            </div>
+
+            <!-- ===================== SET 2 ===================== -->
+            <div class="img-to-4d-video-set" data-set="2">
+              <!-- Row 3: 2 scenes -->
+              <div class="img-to-4d-video-row" data-row="3">
+                <div class="img-to-4d-cell">
+                  <img src="videos/img_to_4d/WAN_out_lorax_1_000_input.png" alt="Scene 5 Input">
+                  <div class="img-to-4d-plus">+</div>
+                  <div class="img-to-4d-prompt">"vibing"</div>
+                </div>
+                <div class="img-to-4d-cell">
+                  <video src="videos/img_to_4d/WAN_out_lorax_1_000_MOTUS.mp4" loop muted playsinline preload="none"
+                    controls></video>
+                </div>
+                <div class="img-to-4d-cell">
+                  <img src="videos/img_to_4d/WAN_out_mushroom_1_000_input.png" alt="Scene 6 Input">
+                  <div class="img-to-4d-plus">+</div>
+                  <div class="img-to-4d-prompt">"singing opera"</div>
+                </div>
+                <div class="img-to-4d-cell">
+                  <video src="videos/img_to_4d/WAN_out_mushroom_1_000_MOTUS.mp4" loop muted playsinline preload="none"
+                    controls></video>
+                </div>
+              </div>
+
+              <!-- Row 4: 2 more scenes -->
+              <div class="img-to-4d-video-row" data-row="4">
+                <div class="img-to-4d-cell">
+                  <img src="videos/img_to_4d/WAN_out_worker_1_000_input.png" alt="Scene 7 Input">
+                  <div class="img-to-4d-plus">+</div>
+                  <div class="img-to-4d-prompt">"angry"</div>
+                </div>
+                <div class="img-to-4d-cell">
+                  <video src="videos/img_to_4d/WAN_out_worker_1_000_MOTUS.mp4" loop muted playsinline preload="none"
+                    controls></video>
+                </div>
+                <div class="img-to-4d-cell">
+                  <img src="videos/img_to_4d/WAN_out_snowman_2_000_input.png" alt="Scene 8 Input">
+                  <div class="img-to-4d-plus">+</div>
+                  <div class="img-to-4d-prompt">"rotating arms"</div>
+                </div>
+                <div class="img-to-4d-cell">
+                  <video src="videos/img_to_4d/WAN_out_snowman_2_000_MOTUS.mp4" loop muted playsinline preload="none"
+                    controls></video>
+                </div>
+              </div>
+            </div>
+
+            <!-- ===================== SET 3 ===================== -->
+            <div class="img-to-4d-video-set" data-set="3">
+              <!-- Row 5: 2 scenes -->
+              <div class="img-to-4d-video-row" data-row="5">
+                <div class="img-to-4d-cell">
+                  <img src="videos/img_to_4d/WAN_out_zebra_1_000_input.png" alt="Scene 9 Input">
+                  <div class="img-to-4d-plus">+</div>
+                  <div class="img-to-4d-prompt">"greeting"</div>
+                </div>
+                <div class="img-to-4d-cell">
+                  <video src="videos/img_to_4d/WAN_out_zebra_1_000_MOTUS.mp4" loop muted playsinline preload="none"
+                    controls></video>
+                </div>
+                <div class="img-to-4d-cell">
+                  <img src="videos/img_to_4d/WAN_out_dragonorange_1_000_input.png" alt="Scene 10 Input">
+                  <div class="img-to-4d-plus">+</div>
+                  <div class="img-to-4d-prompt">"resting"</div>
+                </div>
+                <div class="img-to-4d-cell">
+                  <video src="videos/img_to_4d/WAN_out_dragonorange_1_000_MOTUS.mp4" loop muted playsinline
+                    preload="none" controls></video>
+                </div>
+              </div>
+
+              <!-- Row 6: 2 more scenes -->
+              <div class="img-to-4d-video-row" data-row="6">
+                <div class="img-to-4d-cell">
+                  <img src="videos/img_to_4d/WAN_out_penguin_1_000_input.png" alt="Scene 11 Input">
+                  <div class="img-to-4d-plus">+</div>
+                  <div class="img-to-4d-prompt">"curious"</div>
+                </div>
+                <div class="img-to-4d-cell">
+                  <video src="videos/img_to_4d/WAN_out_penguin_1_000_MOTUS.mp4" loop muted playsinline preload="none"
+                    controls></video>
+                </div>
+                <div class="img-to-4d-cell">
+                  <img src="videos/img_to_4d/WAN_out_mouse_1_000_input.png" alt="Scene 12 Input">
+                  <div class="img-to-4d-plus">+</div>
+                  <div class="img-to-4d-prompt">"surprised"</div>
+                </div>
+                <div class="img-to-4d-cell">
+                  <video src="videos/img_to_4d/WAN_out_mouse_1_000_MOTUS.mp4" loop muted playsinline preload="none"
+                    controls></video>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Reference to external JS (after the HTML so elements exist) -->
+          <script defer src="./static/js/index_img_to_4d.js"></script>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- Application1: Image-to-4D -->
+
+  <!-- Application2: Text-to-4D -->
+  <section class="section" id="app-text-to-4d">
+    <div class="container is-max-desktop">
+      <div class="container is-centered has-text-centered">
+        <div style="display: flex; align-items: center; justify-content: center; gap: 1rem; flex-wrap: wrap;">
+          <h2 class="app-section-title app-4" style="margin: 0;"><span class="app-emoji-badge">✏️</span> Application 4: text-to-4D</h2>
+          <div class="txt-to-4d-set-buttons" style="margin: 0;">
+            <button class="txt-to-4d-set-button txt-to-4d-active" data-set="1">Set 1</button>
+            <button class="txt-to-4d-set-button" data-set="2">Set 2</button>
+            <button class="txt-to-4d-set-button" data-set="3">Set 3</button>
+          </div>
+        </div>
+        <div class="app-section-divider divider-4"></div>
+        <div class="content is-centered has-text-centered has-text-justified">
+
+          <div class="txt-to-4d-video-table" id="txt-to-4d-grid">
+            <!-- Column headers (fixed) -->
+            <div class="txt-to-4d-header-row">
+              <div class="txt-to-4d-header-cell">Input</div>
+              <div class="txt-to-4d-header-cell">Ours</div>
+              <div class="txt-to-4d-header-cell">Input</div>
+              <div class="txt-to-4d-header-cell">Ours</div>
+            </div>
+
+            <!-- ===================== SET 1 ===================== -->
+            <div class="txt-to-4d-video-set txt-to-4d-active" data-set="1">
+              <!-- Row 1: 2 scenes -->
+              <div class="txt-to-4d-video-row" data-row="1">
+                <div class="txt-to-4d-cell">
+                  <div class="txt-to-4d-prompt-box">
+                    <div class="txt-to-4d-prompt-text">"An octopus playing maracas"</div>
+                  </div>
+                </div>
+                <div class="txt-to-4d-cell">
+                  <video src="videos/txt_to_4d/WAN_out_octopus2_1_000_MOTUS.mp4" loop muted autoplay playsinline
+                    preload="metadata" controls></video>
+                </div>
+                <div class="txt-to-4d-cell">
+                  <div class="txt-to-4d-prompt-box">
+                    <div class="txt-to-4d-prompt-text">"A baby dragon drinking boba"</div>
+                  </div>
+                </div>
+                <div class="txt-to-4d-cell">
+                  <video src="videos/txt_to_4d/WAN_out_a_baby_dragon_drinking_boba_1_002_MOTUS.mp4" loop muted autoplay
+                    playsinline preload="metadata" controls></video>
+                </div>
+              </div>
+
+              <!-- Row 2: 2 more scenes -->
+              <div class="txt-to-4d-video-row" data-row="2">
+                <div class="txt-to-4d-cell">
+                  <div class="txt-to-4d-prompt-box">
+                    <div class="txt-to-4d-prompt-text">"A bear dancing ballet"</div>
+                  </div>
+                </div>
+                <div class="txt-to-4d-cell">
+                  <video src="videos/txt_to_4d/WAN_out_a_bear_dancing_ballet_1_004_MOTUS.mp4" loop muted autoplay
+                    playsinline preload="metadata" controls></video>
+                </div>
+                <div class="txt-to-4d-cell">
+                  <div class="txt-to-4d-prompt-box">
+                    <div class="txt-to-4d-prompt-text">"A corgi taking a selfie"</div>
+                  </div>
+                </div>
+                <div class="txt-to-4d-cell">
+                  <video src="videos/txt_to_4d/WAN_out_a_corgi_taking_a_selfie_1_002_MOTUS.mp4" loop muted autoplay
+                    playsinline preload="metadata" controls></video>
+                </div>
+              </div>
+            </div>
+
+            <!-- ===================== SET 2 ===================== -->
+            <div class="txt-to-4d-video-set" data-set="2">
+              <!-- Row 3: 2 scenes -->
+              <div class="txt-to-4d-video-row" data-row="3">
+                <div class="txt-to-4d-cell">
+                  <div class="txt-to-4d-prompt-box">
+                    <div class="txt-to-4d-prompt-text">"A crocodile playing a drum set"</div>
+                  </div>
+                </div>
+                <div class="txt-to-4d-cell">
+                  <video src="videos/txt_to_4d/WAN_out_a_crocodile_playing_a_drum_set_1_005_MOTUS.mp4" loop muted
+                    playsinline preload="none" controls></video>
+                </div>
+                <div class="txt-to-4d-cell">
+                  <div class="txt-to-4d-prompt-box">
+                    <div class="txt-to-4d-prompt-text">"A sheepdog running"</div>
+                  </div>
+                </div>
+                <div class="txt-to-4d-cell">
+                  <video src="videos/txt_to_4d/WAN_out_a_sheepdog_running_1_000_MOTUS.mp4" loop muted playsinline
+                    preload="none" controls></video>
+                </div>
+              </div>
+
+              <!-- Row 4: 2 more scenes -->
+              <div class="txt-to-4d-video-row" data-row="4">
+                <div class="txt-to-4d-cell">
+                  <div class="txt-to-4d-prompt-box">
+                    <div class="txt-to-4d-prompt-text">"A beaver crying"</div>
+                  </div>
+                </div>
+                <div class="txt-to-4d-cell">
+                  <video src="videos/txt_to_4d/WAN_out_beaver_1_006_MOTUS.mp4" loop muted playsinline preload="none"
+                    controls></video>
+                </div>
+                <div class="txt-to-4d-cell">
+                  <div class="txt-to-4d-prompt-box">
+                    <div class="txt-to-4d-prompt-text">"A cute T-Rex flying"</div>
+                  </div>
+                </div>
+                <div class="txt-to-4d-cell">
+                  <video src="videos/txt_to_4d/WAN_out_flying_dino_1_003_MOTUS.mp4" loop muted playsinline
+                    preload="none" controls></video>
+                </div>
+              </div>
+            </div>
+
+            <!-- ===================== SET 3 ===================== -->
+            <div class="txt-to-4d-video-set" data-set="3">
+              <!-- Row 5: 2 scenes -->
+              <div class="txt-to-4d-video-row" data-row="5">
+                <div class="txt-to-4d-cell">
+                  <div class="txt-to-4d-prompt-box">
+                    <div class="txt-to-4d-prompt-text">"A kangaroo boxing"</div>
+                  </div>
+                </div>
+                <div class="txt-to-4d-cell">
+                  <video src="videos/txt_to_4d/WAN_out_kangaroo_boxing_1_007_MOTUS.mp4" loop muted playsinline
+                    preload="none" controls></video>
+                </div>
+                <div class="txt-to-4d-cell">
+                  <div class="txt-to-4d-prompt-box">
+                    <div class="txt-to-4d-prompt-text">"A pirate attacking"</div>
+                  </div>
+                </div>
+                <div class="txt-to-4d-cell">
+                  <video src="videos/txt_to_4d/WAN_out_pirate_1_004_MOTUS.mp4" loop muted playsinline preload="none"
+                    controls></video>
+                </div>
+              </div>
+
+              <!-- Row 6: 2 more scenes -->
+              <div class="txt-to-4d-video-row" data-row="6">
+                <div class="txt-to-4d-cell">
+                  <div class="txt-to-4d-prompt-box">
+                    <div class="txt-to-4d-prompt-text">"A cute spring bouncing"</div>
+                  </div>
+                </div>
+                <div class="txt-to-4d-cell">
+                  <video src="videos/txt_to_4d/WAN_out_spring_1_007_MOTUS.mp4" loop muted playsinline preload="none"
+                    controls></video>
+                </div>
+                <div class="txt-to-4d-cell">
+                  <div class="txt-to-4d-prompt-box">
+                    <div class="txt-to-4d-prompt-text">"A squirrel lifting a dumbell"</div>
+                  </div>
+                </div>
+                <div class="txt-to-4d-cell">
+                  <video src="videos/txt_to_4d/WAN_out_squirrell_dumbell_1_004_MOTUS.mp4" loop muted playsinline
+                    preload="none" controls></video>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Reference to external JS (after the HTML so elements exist) -->
+          <script defer src="./static/js/index_txt_to_4d.js"></script>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- Application2: Text-to-4D -->
+
+  <!-- Motion Transfer -->
+  <section class="section">
+    <div class="container is-max-desktop">
+      <div class="container is-centered has-text-centered">
+        <h2 class="app-section-title app-5"><span class="app-emoji-badge">🔀</span> Application 5: Motion transfer</h2>
+        <div class="app-section-divider divider-5"></div>
+        <div class="content is-centered has-text-centered has-text-justified">
+
+          <div class="retargetting-video-table" id="retargetting-grid">
+            <!-- Column headers (fixed) -->
+            <div class="retargetting-header-row">
+              <div class="retargetting-header-cell">Input</div>
+              <div class="retargetting-header-cell">Output 1</div>
+              <div class="retargetting-header-cell">Output 2</div>
+            </div>
+
+            <!-- Row 1 -->
+            <div class="retargetting-video-row" data-row="1">
+              <div class="retargetting-cell">
+                <video src="videos/retargetting/000-125_c1db1b10f9b14717ba731d7f49d25443_input.mp4" loop muted autoplay
+                  playsinline preload="metadata" controls></video>
+              </div>
+              <div class="retargetting-cell">
+                <video src="videos/retargetting/result_03_AB_MOTUS.mp4" loop muted autoplay playsinline
+                  preload="metadata" controls></video>
+              </div>
+              <div class="retargetting-cell">
+                <video src="videos/retargetting/result_04_AB_MOTUS.mp4" loop muted autoplay playsinline
+                  preload="metadata" controls></video>
+              </div>
+            </div>
+
+            <!-- Row 2 -->
+            <div class="retargetting-video-row" data-row="2">
+              <div class="retargetting-cell">
+                <video src="videos/retargetting/000-092_cd2a2d7fe1134a40a4fe65eb422fe736_input.mp4" loop muted autoplay
+                  playsinline preload="metadata" controls></video>
+              </div>
+              <div class="retargetting-cell">
+                <video src="videos/retargetting/result_05_AB_MOTUS.mp4" loop muted autoplay playsinline
+                  preload="metadata" controls></video>
+              </div>
+              <div class="retargetting-cell">
+                <video src="videos/retargetting/result06_AB_MOTUS.mp4" loop muted autoplay playsinline
+                  preload="metadata" controls></video>
+              </div>
+            </div>
+          </div>
+          <!-- Reference to external JS (after the HTML so elements exist) -->
+          <script defer src="./static/js/index_retargetting.js"></script>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- Motion Transfer -->
+
+  <!-- Limitations -->
+  <section class="section">
+    <div class="container is-max-desktop">
+      <div class="container is-centered has-text-centered">
+        <h2 class="title is-3">Limitations</h2>
+        <div class="content is-centered has-text-centered has-text-justified">
+          <p style="font-size: 0.95rem; color: #555; margin-bottom: 1.5rem; text-align: center;">
+            We assume fixed connectivity and thus changes in topology cannot be modeled.
+            Although our model is able to hallucinate parts that are not visible,
+            it sometimes fail at reconstructing occluded regions, in particular when they are missing from the reference frame
+            or when they disappear during a complex motion.
+          </p>
+
+          <div class="limitations-video-table">
+            <!-- Row with 3 input/output pairs -->
+            <div class="limitations-video-row">
+              <!-- Pair 1 -->
+              <div class="limitations-cell">
+                <video src="videos/limitations/in-the-wild__splashing_water_input.mp4" loop muted autoplay playsinline
+                  preload="metadata" controls></video>
+              </div>
+              <div class="limitations-cell">
+                <video src="videos/limitations/in-the-wild__splashing_water_MOTUS.mp4" loop muted autoplay playsinline
+                  preload="metadata" controls></video>
+              </div>
+              <!-- Pair 2 -->
+              <div class="limitations-cell">
+                <video src="videos/limitations/000-085_d468a75373bf42718e86fa738c0862b4_input.mp4" loop muted autoplay
+                  playsinline preload="metadata" controls></video>
+              </div>
+              <div class="limitations-cell">
+                <video src="videos/limitations/000-085_d468a75373bf42718e86fa738c0862b4_MOTUS.mp4" loop muted autoplay
+                  playsinline preload="metadata" controls></video>
+              </div>
+              <!-- Pair 3 -->
+              <div class="limitations-cell">
+                <video src="videos/limitations/000-121_2ff187f386b04ba4ba391cb425ae04b8_input.mp4" loop muted autoplay
+                  playsinline preload="metadata" controls></video>
+              </div>
+              <div class="limitations-cell">
+                <video src="videos/limitations/000-121_2ff187f386b04ba4ba391cb425ae04b8_MOTUS.mp4" loop muted autoplay
+                  playsinline preload="metadata" controls></video>
+              </div>
+            </div>
+
+            <!-- Text descriptions under the 3 pairs -->
+            <div class="limitations-description-row">
+              <div class="limitations-description">Topological changes</div>
+              <div class="limitations-description">Occlusion on reference frame</div>
+              <div class="limitations-description">Occlusion during motion</div>
+            </div>
+          <!-- Reference to external JS (after the HTML so elements exist) -->
+            <script defer src="./static/js/index_limitations.js"></script>
+          </div>
+        </div>
+      </div>
+  </section>
+  <!-- Limitations -->
+
+  <!-- 4D Viewer Play/Pause Script -->
+  <script type="module" src="./static/js/model-viewer-controls.js"></script>
+
+  <!-- Video Carousel Script -->
+  <script>
+    let carouselIndex = 0;
+    const carouselTrack = document.getElementById('carouselTrack');
+    const carouselItems = document.querySelectorAll('.video-carousel-item');
+    const carouselDots = document.querySelectorAll('.video-carousel-dot');
+    const carouselVideos = document.querySelectorAll('.video-carousel-item video');
+    const totalItems = carouselItems.length;
+
+    // Set video playback speed to 0.7
+    carouselVideos.forEach(video => {
+      video.playbackRate = 0.7;
+      video.addEventListener('loadedmetadata', () => {
+        video.playbackRate = 0.7;
+      });
+    });
+
+    function updateCarousel() {
+      const itemWidth = carouselItems[0].offsetWidth;
+      const gap = 8; // 0.5rem gap
+      const offset = carouselIndex * (itemWidth + gap);
+      carouselTrack.style.transform = `translateX(-${offset}px)`;
+
+      // Update dots
+      carouselDots.forEach((dot, index) => {
+        dot.classList.toggle('active', index === carouselIndex);
+      });
+    }
+
+    function moveCarousel(direction) {
+      carouselIndex += direction;
+      if (carouselIndex < 0) carouselIndex = totalItems - 1;
+      if (carouselIndex >= totalItems) carouselIndex = 0;
+      updateCarousel();
+    }
+
+    function goToSlide(index) {
+      carouselIndex = index;
+      updateCarousel();
+    }
+
+    // Handle resize
+    window.addEventListener('resize', updateCarousel);
+  </script>
+
+</body>
+
+</html>

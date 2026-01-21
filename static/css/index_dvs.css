@@ -1,0 +1,113 @@
+/* Container for the Input/Ours grid */
+#io-grid {
+  margin-top: 32px; /* space from previous content */
+}
+
+/* Title/description under your main page header */
+#io-grid .io-subtitle {
+  margin-bottom: 1.25rem;
+  font-size: 0.95rem;
+  color: #555;
+}
+
+/* Set buttons - same style as main grid */
+.io-set-buttons {
+  margin-bottom: 1rem;
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Shared button style */
+.io-set-buttons button {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 0.3rem 0.8rem;
+  cursor: pointer;
+  background: #f5f5f5;
+  font-size: 0.9rem;
+}
+
+.io-set-buttons button:hover {
+  background: #e9e9e9;
+}
+
+.io-set-buttons .io-set-button.io-active {
+  background: #ddd;
+  font-weight: 600;
+}
+
+/* Table structure */
+#io-grid .io-video-table {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Each set contains several rows */
+#io-grid .io-video-set {
+  display: none;
+  flex-direction: column;
+  gap: 4px;
+}
+
+#io-grid .io-video-set.io-active {
+  display: flex;
+}
+
+/* 4 columns: Input 1 | Ours 1 | Input 2 | Ours 2 */
+#io-grid .io-header-row,
+#io-grid .io-video-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 24px;
+  align-items: center;
+}
+
+#io-grid .io-header-row {
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-align: center;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 6px;
+  margin-bottom: 4px;
+}
+
+#io-grid .io-header-cell {
+  padding: 4px 2px;
+}
+
+#io-grid .io-video-row .io-cell {
+  background: #fdfdfd;
+}
+
+#io-grid video {
+  width: 100%;
+  display: block;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  background: #000;
+}
+
+/* Responsive: fall back to 2 columns on narrow screens */
+@media (max-width: 900px) {
+  #io-grid .io-header-row,
+  #io-grid .io-video-row {
+    grid-template-columns: 1fr 1fr;
+    grid-auto-rows: auto;
+  }
+
+  #io-grid .io-header-row::after {
+    content: "Scroll horizontally on small screens.";
+    grid-column: 1 / -1;
+    font-size: 0.75rem;
+    color: #888;
+    margin-top: 4px;
+  }
+
+  #io-grid .io-pair-gap-left {
+    margin-left: 0;
+  }
+}

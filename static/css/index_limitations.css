@@ -1,0 +1,102 @@
+/* ========================================
+   Limitations Section: 3 input/output pairs in one row
+   with descriptions under the 3 pairs
+   ======================================== */
+
+.limitations-video-table {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+/* Header row: 6 columns (3 pairs × 2) */
+.limitations-header-row {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 0.5rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+.limitations-header-cell {
+  padding: 0.5rem;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+}
+
+/* Video row: 6 columns (3 pairs × 2) */
+.limitations-video-row {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 0.5rem;
+}
+
+.limitations-cell {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  overflow: visible;
+  border-radius: 0;
+  background-color: #000;
+}
+
+.limitations-cell video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 0;
+}
+
+/* Description row: 3 descriptions */
+.limitations-description-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+}
+
+.limitations-description {
+  text-align: center;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #333;
+  padding: 0.75rem;
+  background-color: #f8f8f8;
+  border-radius: 6px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+  .limitations-header-row,
+  .limitations-video-row {
+    grid-template-columns: repeat(6, 1fr);
+  }
+
+  .limitations-video-row {
+    grid-auto-flow: dense;
+  }
+
+  .limitations-description-row {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .limitations-header-row,
+  .limitations-video-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .limitations-description-row {
+    grid-template-columns: 1fr;
+  }
+
+  .limitations-header-cell,
+  .limitations-description {
+    font-size: 0.8rem;
+  }
+}
