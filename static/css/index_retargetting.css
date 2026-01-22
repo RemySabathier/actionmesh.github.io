@@ -4,7 +4,7 @@
 }
 
 /* Table structure */
-#retargetting-grid .retargetting-video-table {
+#retargetting-grid.retargetting-video-table {
   display: flex;
   flex-direction: column;
   gap: 12px;
