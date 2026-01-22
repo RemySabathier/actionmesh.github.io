@@ -59,8 +59,7 @@ h1 {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  overflow-x: auto;
-  min-width: 600px;
+  width: 100%;
 }
 
 /* Each set contains 3 video rows */
@@ -80,6 +79,8 @@ h1 {
   grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 8px;
   align-items: center;
+  width: 100%;
+  min-width: 0;
 }
 
 .header-row {
@@ -97,6 +98,8 @@ h1 {
 
 .video-row .cell {
   background: #fdfdfd;
+  min-width: 0;
+  overflow: hidden;
 }
 
 video {

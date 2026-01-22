@@ -163,6 +163,31 @@
   .limitations-video-row { grid-template-columns: repeat(6, 1fr) !important; }
   .limitations-description-row { grid-template-columns: repeat(3, 1fr) !important; }
 
+  /* Ensure video table container fills available width */
+  .video-table {
+    width: 100% !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+  }
+
+  /* Ensure video rows properly constrain their content */
+  .video-row {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  /* Ensure cells and videos scale properly */
+  .video-row .cell {
+    min-width: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .video-row .cell video {
+    width: 100% !important;
+    height: auto !important;
+    max-width: 100% !important;
+  }
+
   /* Prevent any flex wrapping */
   .set-buttons, .io-set-buttons, .img-to-4d-set-buttons, .txt-to-4d-set-buttons, .mesh-to-4d-set-buttons,
   div[style*="display: flex"] { flex-wrap: nowrap !important; }
