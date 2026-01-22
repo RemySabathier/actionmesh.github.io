@@ -149,34 +149,82 @@
   .header-row {
     display: grid !important;
     grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    min-height: 24px !important;
+    height: auto !important;
+    overflow: visible !important;
+    flex-shrink: 0 !important;
   }
   .io-header-row {
     display: grid !important;
     grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    min-height: 24px !important;
+    height: auto !important;
+    overflow: visible !important;
+    flex-shrink: 0 !important;
   }
   .longseq-header-row {
     display: grid !important;
     grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    min-height: 24px !important;
+    height: auto !important;
+    overflow: visible !important;
+    flex-shrink: 0 !important;
   }
   .img-to-4d-header-row {
     display: grid !important;
     grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    min-height: 24px !important;
+    height: auto !important;
+    overflow: visible !important;
+    flex-shrink: 0 !important;
   }
   .txt-to-4d-header-row {
     display: grid !important;
     grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    min-height: 24px !important;
+    height: auto !important;
+    overflow: visible !important;
+    flex-shrink: 0 !important;
   }
   .mesh-to-4d-header-row {
     display: grid !important;
     grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    min-height: 24px !important;
+    height: auto !important;
+    overflow: visible !important;
+    flex-shrink: 0 !important;
   }
   .retargetting-header-row {
     display: grid !important;
     grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    min-height: 24px !important;
+    height: auto !important;
+    overflow: visible !important;
+    flex-shrink: 0 !important;
   }
   .limitations-header-row {
     display: grid !important;
     grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    min-height: 24px !important;
+    height: auto !important;
+    overflow: visible !important;
+    flex-shrink: 0 !important;
   }
 
   /* Force grid columns to never change */
