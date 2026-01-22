@@ -145,11 +145,38 @@
     font-size: 1.2vw !important;
   }
 
-  /* Hide header rows on narrow screens to prevent overflow */
-  .header-row, .io-header-row, .longseq-header-row,
-  .img-to-4d-header-row, .txt-to-4d-header-row, .mesh-to-4d-header-row,
-  .retargetting-header-row, .limitations-header-row {
-    display: none !important;
+  /* Keep all header rows visible and scale like video grids */
+  .header-row {
+    display: grid !important;
+    grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+  }
+  .io-header-row {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+  .longseq-header-row {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+  .img-to-4d-header-row {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+  .txt-to-4d-header-row {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+  .mesh-to-4d-header-row {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+  .retargetting-header-row {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+  .limitations-header-row {
+    display: grid !important;
+    grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
   }
 
   /* Force grid columns to never change */
